@@ -11,15 +11,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  List<Tarefa> tarefas=[];
+  List<Tarefa> tarefas = [];
   TextEditingController controllerTarefa = new TextEditingController();
 
   @override
   void initState() {
-    Repositorio.recuperarTudo().then((dados){
+    Repositorio.recuperarTudo().then((dados) {
       setState(() {
-        tarefas=dados;
+        tarefas = dados;
       });
     });
     super.initState();
@@ -29,9 +28,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Lista de tarefas"),
+        title: Text(
+            "Lista de tarefas",
+          style: TextStyle(
+            fontSize: 24, // Tamanho da fonte
+            fontWeight: FontWeight.bold, // Espessura da fonte
+            color: Colors.white, // Cor da fonte
+            fontFamily: 'Roboto', // Fonte personalizada (certifique-se de que a fonte esteja no projeto)
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.deepOrangeAccent,
+        backgroundColor: Colors.red,
       ),
       body: Column(
         children: [
@@ -39,27 +46,43 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Expanded(child: TextField(
-                  controller: controllerTarefa,
-                  decoration: InputDecoration(label: Text("Nova tarefa",),
-                  )),
-                IconButton(onPressed: () {
-                  if (controllerTarefa.text.isEmpty){
-                    setState(() {
-                      Tarefa tarefa = new Tarefa(nome: controllerTarefa.text, realizado: false);
-                      tarefas.add(tarefa);
-                    });
-                  Repositorio.salvarTudo(tarefas);
-                  controllerTarefa.clear();
-                }, icon: Icon(Icons.add_box,))
-                }
+                Expanded(
+                    child: TextField(
+                      controller: controllerTarefa,
+                      decoration: InputDecoration(
+                          hintText: "Digite sua tarefa aqui"),
+                    )),
+                IconButton(
+                    onPressed: () {
+                      if (controllerTarefa.text.isNotEmpty) {
+                        setState(() {
+                          Tarefa tarefa = new Tarefa(
+                              nome: controllerTarefa.text, realizado: false);
+                          tarefas.add(tarefa);
+                        });
+                        Repositorio.salvarTudo(tarefas);
+                        controllerTarefa.clear();
+                      }
+                      else{
+                        SnackBar snack = SnackBar(
+                          content: Text("Favor inserir uma tarefa!"),
+                          duration: Duration(seconds: 5),
+                          backgroundColor: Colors.red,);
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(snack);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.add,
+                    ))
               ],
             ),
           ),
           Expanded(
             child: ListView.builder(
               itemBuilder: _construtorLista,
-              itemCount: tarefas.length,),
+              itemCount: tarefas.length,
+            ),
           ),
         ],
       ),
@@ -70,33 +93,63 @@ class _HomePageState extends State<HomePage> {
     return Dismissible(
       key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
       child: CheckboxListTile(
-        title: Text(tarefas[index].nome),
+        title: tarefas[index].realizado
+            ? Text(
+          tarefas[index].nome,
+          style: TextStyle(decoration: TextDecoration.lineThrough),
+        )
+            : Text(
+          tarefas[index].nome,
+        ),
         value: tarefas[index].realizado,
-        ? Text(
-
-      )
         onChanged: (checked) {
           setState(() {
             tarefas[index].realizado = checked!;
           });
           Repositorio.salvarTudo(tarefas);
         },
-        secondary: tarefas[index].realizado ? Icon(Icons.verified, color: Colors.green,) : Icon()
-        Icon(Icons.verified):
-        Icon(Icons.error),
+        secondary: tarefas[index].realizado
+            ? Icon(
+          Icons.verified,
+          color: Colors.green,
+        )
+            : Icon(
+          Icons.verified_outlined,
+          color: Colors.red,
         ),
-      onDismissed: (direction){
+      ),
+      onDismissed: (direction) {
+        Tarefa tarefaRemovida=tarefas[index];
+        int indiceTarefaRemovida=index;
         tarefas.remove(tarefas[index]);
         Repositorio.salvarTudo(tarefas);
+        SnackBar snack = SnackBar(
+          backgroundColor: Colors.deepOrangeAccent,
+          content: Text("Tarefa ${tarefaRemovida.nome} removida"),
+          action: SnackBarAction(label: "Desfazer",
+            onPressed: () {
+              setState(() {
+                tarefas.insert(indiceTarefaRemovida, tarefaRemovida);
+              });
+              Repositorio.salvarTudo(tarefas);
+            },
+          ),
+        );
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(snack);
       },
       background: Container(
-        child: Icon(Icons.delete
-        size: 50,color: Colors.red,
-        alignment: Alignment.centerRight,),
-        
+        child: Align(
+          child: Icon(
+            Icons.delete,
+            size: 35,
+            color: Colors.white,
+          ),
+          alignment: Alignment.centerRight,
+        ),
+        decoration: BoxDecoration(color: Colors.red),
       ),
+      direction: DismissDirection.endToStart,
     );
   }
 }
-
-
