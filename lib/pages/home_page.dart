@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.cyan,
       ),
       body: Column(
         children: [
@@ -73,7 +73,8 @@ class _HomePageState extends State<HomePage> {
                       }
                     },
                     icon: Icon(
-                      Icons.add,
+                      Icons.add_circle_rounded,
+                      size: 30,
                     ))
               ],
             ),
@@ -124,9 +125,9 @@ class _HomePageState extends State<HomePage> {
         tarefas.remove(tarefas[index]);
         Repositorio.salvarTudo(tarefas);
         SnackBar snack = SnackBar(
-          backgroundColor: Colors.deepOrangeAccent,
+          backgroundColor: Colors.green,
           content: Text("Tarefa ${tarefaRemovida.nome} removida"),
-          action: SnackBarAction(label: "Desfazer",
+          action: SnackBarAction(label: "Desfazer", textColor: Colors.white,
             onPressed: () {
               setState(() {
                 tarefas.insert(indiceTarefaRemovida, tarefaRemovida);
